@@ -1,7 +1,7 @@
-import { Transaction } from './transaction';
+import { TransactionDto } from './transaction';
 
 describe('Transaction', () => {
   it('should be defined', () => {
-    expect(new Transaction()).toBeDefined();
+    expect(new TransactionDto()).toBeDefined();
   });
 });
