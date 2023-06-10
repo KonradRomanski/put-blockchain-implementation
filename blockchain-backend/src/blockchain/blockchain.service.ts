@@ -40,15 +40,32 @@ export class BlockchainService {
     return this.blockchain;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} blockchain`;
+  findOne(id: number): Block {
+    return this.blockchain.find((block) => block.index === id);
   }
 
-  update(id: number, transactionDto: TransactionDto) {
-    return `This action updates a #${id} blockchain`;
+  update(id: number, transactionDto: TransactionDto): Block {
+    const blockIndex = this.blockchain.findIndex((block) => block.index === id);
+    if (blockIndex === -1) {
+      return null; // Block not found
+    }
+
+    // Update the transaction details
+    const { sender, recipient, amount } = transactionDto;
+    this.blockchain[blockIndex].transactions = [{ sender, recipient, amount }];
+
+    return this.blockchain[blockIndex];
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} blockchain`;
+  remove(id: number): Block {
+    const blockIndex = this.blockchain.findIndex((block) => block.index === id);
+    if (blockIndex === -1) {
+      return null; // Block not found
+    }
+
+    // Remove the block from the blockchain
+    const removedBlock = this.blockchain.splice(blockIndex, 1)[0];
+
+    return removedBlock;
   }
 }

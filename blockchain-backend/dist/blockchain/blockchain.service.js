@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockchainService = void 0;
 const common_1 = require("@nestjs/common");
+const blockchain_utils_1 = require("./blockchain-utils/blockchain-utils");
 let BlockchainService = exports.BlockchainService = class BlockchainService {
     constructor() {
         this.blockchain = [];
@@ -17,18 +18,35 @@ let BlockchainService = exports.BlockchainService = class BlockchainService {
         const { sender, recipient, amount } = transactionDto;
         const transaction = { sender, recipient, amount };
         this.pendingTransactions.push(transaction);
+        const lastBlock = blockchain_utils_1.BlockchainUtils.getLastBlock(this.blockchain);
+        const previousHash = lastBlock ? lastBlock.hash : '';
+        const nonce = blockchain_utils_1.BlockchainUtils.proofOfWork(previousHash, this.pendingTransactions);
+        const hash = blockchain_utils_1.BlockchainUtils.calculateHash(nonce, previousHash, Date.now(), this.pendingTransactions);
+        const newBlock = blockchain_utils_1.BlockchainUtils.createNewBlock(this.blockchain, this.pendingTransactions, previousHash, nonce, hash);
+        this.blockchain.push(newBlock);
     }
     findAll() {
         return this.blockchain;
     }
     findOne(id) {
-        return `This action returns a #${id} blockchain`;
+        return this.blockchain.find((block) => block.index === id);
     }
     update(id, transactionDto) {
-        return `This action updates a #${id} blockchain`;
+        const blockIndex = this.blockchain.findIndex((block) => block.index === id);
+        if (blockIndex === -1) {
+            return null;
+        }
+        const { sender, recipient, amount } = transactionDto;
+        this.blockchain[blockIndex].transactions = [{ sender, recipient, amount }];
+        return this.blockchain[blockIndex];
     }
     remove(id) {
-        return `This action removes a #${id} blockchain`;
+        const blockIndex = this.blockchain.findIndex((block) => block.index === id);
+        if (blockIndex === -1) {
+            return null;
+        }
+        const removedBlock = this.blockchain.splice(blockIndex, 1)[0];
+        return removedBlock;
     }
 };
 exports.BlockchainService = BlockchainService = __decorate([

@@ -39,7 +39,26 @@ let BlockchainController = exports.BlockchainController = class BlockchainContro
 };
 __decorate([
     (0, common_1.Post)(),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'Creates a new transaction' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new transaction' }),
+    (0, swagger_1.ApiBody)({
+        type: transaction_1.TransactionDto,
+        description: 'Transaction data',
+        examples: {
+            example1: {
+                value: {
+                    sender: 'John',
+                    recipient: 'Alice',
+                    amount: 10,
+                },
+                summary: 'Example of a valid transaction',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'The transaction has been successfully created.',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad Request' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [transaction_1.TransactionDto]),
@@ -47,13 +66,28 @@ __decorate([
 ], BlockchainController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Retrieves the blockchain' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all transactions' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Returns an array of transactions.',
+    }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], BlockchainController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a transaction by ID' }),
+    (0, swagger_1.ApiParam)({
+        name: 'id',
+        description: 'The ID of the transaction',
+        example: '1',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Returns the details of the transaction.',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Transaction not found' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -61,6 +95,31 @@ __decorate([
 ], BlockchainController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a transaction by ID' }),
+    (0, swagger_1.ApiParam)({
+        name: 'id',
+        description: 'The ID of the transaction',
+        example: '1',
+    }),
+    (0, swagger_1.ApiBody)({
+        type: transaction_1.TransactionDto,
+        description: 'Updated transaction data',
+        examples: {
+            example1: {
+                value: {
+                    sender: 'John',
+                    recipient: 'Alice',
+                    amount: 20,
+                },
+                summary: 'Example of an updated transaction',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'The transaction has been successfully updated.',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Transaction not found' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -69,6 +128,17 @@ __decorate([
 ], BlockchainController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a transaction by ID' }),
+    (0, swagger_1.ApiParam)({
+        name: 'id',
+        description: 'The ID of the transaction',
+        example: '1',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'The transaction has been successfully deleted.',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Transaction not found' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

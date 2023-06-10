@@ -5,7 +5,7 @@ export declare class BlockchainController {
     constructor(blockchainService: BlockchainService);
     create(transactionDto: TransactionDto): void;
     findAll(): import("./interface/block/block.interface").Block[];
-    findOne(id: string): string;
-    update(id: string, transactionDto: TransactionDto): string;
-    remove(id: string): string;
+    findOne(id: string): import("./interface/block/block.interface").Block;
+    update(id: string, transactionDto: TransactionDto): import("./interface/block/block.interface").Block;
+    remove(id: string): import("./interface/block/block.interface").Block;
 }

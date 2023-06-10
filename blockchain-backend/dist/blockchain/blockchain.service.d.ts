@@ -5,7 +5,7 @@ export declare class BlockchainService {
     private pendingTransactions;
     create(transactionDto: TransactionDto): void;
     findAll(): Block[];
-    findOne(id: number): string;
-    update(id: number, transactionDto: TransactionDto): string;
-    remove(id: number): string;
+    findOne(id: number): Block;
+    update(id: number, transactionDto: TransactionDto): Block;
+    remove(id: number): Block;
 }
