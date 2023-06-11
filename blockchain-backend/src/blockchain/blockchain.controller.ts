@@ -15,15 +15,26 @@ export class BlockchainController {
     return this.blockchainService.getBlocks();
   }
 
-  @Post('mine')
-  @ApiOperation({ summary: 'Mine a new block' })
+  // @Post('mine')
+  // @ApiOperation({ summary: 'Mine a new block' })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'The block has been successfully mined.',
+  // })
+  // mineBlock(@Body() transactionDto: TransactionDto) {
+  //   this.blockchainService.addBlock(transactionDto);
+  //   return { message: 'Block added' };
+  // }
+
+  @Post('transaction')
+  @ApiOperation({ summary: 'Add a new transaction' })
   @ApiResponse({
     status: 201,
-    description: 'The block has been successfully mined.',
+    description: 'The transaction has been successfully added.',
   })
-  mineBlock(@Body() transactionDto: TransactionDto) {
-    this.blockchainService.addBlock(transactionDto);
-    return { message: 'Block added' };
+  addTransaction(@Body() transactionDto: TransactionDto) {
+    this.blockchainService.addTransaction(transactionDto);
+    return { message: 'Transaction added' };
   }
 
   @Get('validate')

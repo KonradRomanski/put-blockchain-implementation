@@ -5,12 +5,22 @@ export class Blockchain {
   public chain: Block[];
 
   constructor() {
-    this.chain = [new Block('', new Transaction(100, 'genesis', 'satoshi'))];
+    this.chain = [this.createGenesisBlock()]; // Create genesis block
   }
 
-  addBlock(t: Transaction) {
-    const newBlock = new Block(this.getLastBlock().hash, t);
-    this.chain.push(newBlock);
+  createGenesisBlock() {
+    return new Block('', [], new Date());
+  }
+
+  addTransaction(t: Transaction) {
+    const lastBlock = this.getLastBlock();
+
+    if (lastBlock.transactions.length < 3) {
+      lastBlock.transactions.push(t);
+    } else {
+      const newBlock = new Block(lastBlock.hash, [t]);
+      this.chain.push(newBlock);
+    }
   }
 
   getLastBlock(): Block {

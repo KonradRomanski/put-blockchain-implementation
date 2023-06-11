@@ -9,4 +9,6 @@ export class TransactionDto {
 
   @ApiProperty()
   readonly receiver: string;
+
+  readonly hash: string;
 }

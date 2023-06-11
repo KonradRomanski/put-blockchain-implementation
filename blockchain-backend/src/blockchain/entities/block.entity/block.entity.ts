@@ -15,7 +15,7 @@ export class Block {
   previousHash: string;
 
   @Column('json')
-  transaction: object;
+  transactions: string;
 
   @Column()
   hash: string;
