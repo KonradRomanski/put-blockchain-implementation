@@ -1,5 +1,5 @@
 {
-  "name": "nest-app",
+  "name": "blockchain-backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -22,15 +22,9 @@
   "dependencies": {
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
-    "@nestjs/mapped-types": "*",
-    "@nestjs/mongoose": "^9.2.2",
     "@nestjs/platform-express": "^9.0.0",
-    "@nestjs/swagger": "^6.3.0",
-    "crypto-js": "^4.1.1",
-    "mongoose": "^7.2.3",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.2.0",
-    "swagger-ui-express": "^4.6.3"
+    "rxjs": "^7.2.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
