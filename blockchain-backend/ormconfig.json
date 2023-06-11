@@ -5,6 +5,6 @@
   "username": "postgres",
   "password": "passw0rd",
   "database": "blockchaindb",
-  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "entities": ["dist/**/*.entity.js"],
   "synchronize": true
 }

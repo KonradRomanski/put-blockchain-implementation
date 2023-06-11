@@ -1,70 +1,62 @@
 import { Injectable } from '@nestjs/common';
-import * as CryptoJS from 'crypto-js';
-
-class Transaction {
-  constructor(
-    public amount: number,
-    public sender: string, // public key
-    public receiver: string, // public key
-  ) {}
-}
-
-class Block {
-  public nonce = Math.round(Math.random() * 999999999);
-
-  constructor(
-    public prevHash: string,
-    public transaction: Transaction,
-    public ts = Date.now(),
-  ) {}
-
-  get hash() {
-    const str = JSON.stringify(this);
-    const hash = CryptoJS.SHA256(str).toString();
-    return hash;
-  }
-}
-
-class Blockchain {
-  public chain = [new Block('', new Transaction(100, 'genesis', 'satoshi'))];
-
-  addBlock(t: Transaction) {
-    const newBlock = new Block(this.chain[this.chain.length - 1].hash, t);
-    this.chain.push(newBlock);
-  }
-
-  validateChain() {
-    for (let i = 1; i < this.chain.length; i++) {
-      const currentBlock = this.chain[i];
-      const previousBlock = this.chain[i - 1];
-
-      if (currentBlock.hash !== currentBlock.hash) {
-        return false;
-      }
-
-      if (currentBlock.prevHash !== previousBlock.hash) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-}
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Block as EntityBlock } from './entities/block.entity/block.entity';
+import { Blockchain } from './utils/blockchain/blockchain';
+import { Block } from './utils/block/block';
+import { Transaction } from './utils/transaction/transaction';
 
 @Injectable()
 export class BlockchainService {
-  blockchain = new Blockchain();
+  private blockchain = new Blockchain();
 
-  getBlocks() {
-    return this.blockchain.chain;
+  constructor(
+    @InjectRepository(EntityBlock)
+    private blocksRepository: Repository<EntityBlock>,
+  ) {
+    // Genesis block
+    this.init();
   }
 
-  addBlock(t: Transaction) {
+  async init() {
+    const blocks = await this.blocksRepository.find();
+    if (blocks.length > 0) {
+      this.blockchain.chain = blocks.map(
+        (block) =>
+          new Block(
+            block.previousHash,
+            block.transaction as Transaction,
+            block.timestamp,
+          ),
+      );
+    } else {
+      // If no blocks are found, create the genesis block
+      const genesisBlock = new Block(
+        '',
+        new Transaction(100, 'genesis', 'satoshi'),
+      );
+      this.blockchain.chain = [genesisBlock];
+    }
+  }
+
+  getBlocks() {
+    return this.blocksRepository.find();
+  }
+
+  async addBlock(t: Transaction) {
     this.blockchain.addBlock(t);
+    const newBlock = this.blockchain.getLastBlock();
+    const blockEntity = new EntityBlock();
+    blockEntity.nonce = newBlock.nonce.toString();
+    blockEntity.previousHash = newBlock.prevHash;
+    blockEntity.transaction = newBlock.transaction;
+    blockEntity.timestamp = newBlock.ts;
+    blockEntity.hash = newBlock.hash;
+    console.log('POST', blockEntity);
+    await this.blocksRepository.save(blockEntity);
   }
 
   validateChain() {
     return this.blockchain.validateChain();
   }
 }
-
