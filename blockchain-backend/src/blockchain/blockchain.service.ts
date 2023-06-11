@@ -32,9 +32,7 @@ export class BlockchainService {
       );
     } else {
       // If no blocks are found, create the genesis block
-      const genesisBlock = new Block('', [
-        new Transaction(100, 'genesis', 'satoshi'),
-      ]);
+      const genesisBlock = new Block('', []);
       this.blockchain.chain = [genesisBlock];
     }
   }
@@ -70,9 +68,10 @@ export class BlockchainService {
       blockEntity.timestamp = lastBlock.ts;
       blockEntity.hash = lastBlock.hash;
 
-      const oldBlock = await this.blocksRepository.findOne({
-        where: { hash: lastBlock.hash },
-      });
+      // query the database for the last block
+      const oldBlock = await this.blocksRepository
+        .createQueryBuilder('block')
+        .getOne();
 
       if (oldBlock != null) {
         // update the old block
@@ -85,22 +84,38 @@ export class BlockchainService {
         await this.blocksRepository.save(blockEntity);
       }
     } else {
-      const newBlock = new Block(lastBlock.hash, [t]);
-      newBlock.mineBlock(difficulty);
+      // If the last block is full, mine it
+      lastBlock.mineBlock(difficulty);
+      this.blockchain.chain.push(lastBlock);
+
+      // Save the mined block
+      const minedBlockEntity = new EntityBlock();
+      minedBlockEntity.nonce = lastBlock.nonce.toString();
+      minedBlockEntity.previousHash = lastBlock.prevHash;
+      minedBlockEntity.transactions = JSON.stringify(lastBlock.transactions);
+      minedBlockEntity.timestamp = lastBlock.ts;
+      minedBlockEntity.hash = lastBlock.hash;
+
+      console.log('POST', minedBlockEntity);
+      await this.blocksRepository.save(minedBlockEntity);
+
+      // Then, create a new block and add the new transaction to it
+      const newBlock = new Block(lastBlock.hash, []);
       this.blockchain.chain.push(newBlock);
 
-      const blockEntity = new EntityBlock();
-      blockEntity.nonce = newBlock.nonce.toString();
-      blockEntity.previousHash = newBlock.prevHash;
-      blockEntity.transactions = JSON.stringify(newBlock.transactions);
-      blockEntity.timestamp = newBlock.ts;
-      blockEntity.hash = newBlock.hash;
+      // Add the transaction to the new block and save it
+      this.blockchain.addTransaction(t);
+      const newBlockEntity = new EntityBlock();
+      newBlockEntity.nonce = newBlock.nonce.toString();
+      newBlockEntity.previousHash = newBlock.prevHash;
+      newBlockEntity.transactions = JSON.stringify(newBlock.transactions);
+      newBlockEntity.timestamp = newBlock.ts;
+      newBlockEntity.hash = newBlock.hash;
 
-      console.log('POST', blockEntity);
-      await this.blocksRepository.save(blockEntity);
+      console.log('POST', newBlockEntity);
+      await this.blocksRepository.save(newBlockEntity);
     }
   }
-
 
   // async addBlock(t: Transaction) {
   //   this.blockchain.addBlock(t);
