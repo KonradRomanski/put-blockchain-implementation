@@ -3,9 +3,11 @@ import { Transaction } from '../transaction/transaction';
 
 export class Blockchain {
   public chain: Block[];
+  public difficulty: number;
 
   constructor() {
     this.chain = [this.createGenesisBlock()]; // Create genesis block
+    this.difficulty = 4; // Change this to set difficulty
   }
 
   createGenesisBlock() {
@@ -15,13 +17,19 @@ export class Blockchain {
   addTransaction(t: Transaction) {
     const lastBlock = this.getLastBlock();
 
-    if (lastBlock.transactions.length < 3) {
-      lastBlock.transactions.push(t);
-    } else {
-      const newBlock = new Block(lastBlock.hash, [t]);
+    lastBlock.transactions.push(t);
+    lastBlock.hash = lastBlock.calculateHash(); // Recalculate the hash
+    lastBlock.mineBlock(this.difficulty);
+
+    if (lastBlock.transactions.length >= 3) {
+      const newBlock = new Block(lastBlock.hash, []);
       this.chain.push(newBlock);
     }
   }
+
+
+
+
 
   getLastBlock(): Block {
     return this.chain[this.chain.length - 1];

@@ -58,6 +58,7 @@ export class BlockchainService {
 
   async addTransaction(t: Transaction) {
     const lastBlock = this.blockchain.getLastBlock();
+    const difficulty = this.blockchain.difficulty;
 
     if (lastBlock.transactions.length < 3) {
       this.blockchain.addTransaction(t);
@@ -85,6 +86,7 @@ export class BlockchainService {
       }
     } else {
       const newBlock = new Block(lastBlock.hash, [t]);
+      newBlock.mineBlock(difficulty);
       this.blockchain.chain.push(newBlock);
 
       const blockEntity = new EntityBlock();

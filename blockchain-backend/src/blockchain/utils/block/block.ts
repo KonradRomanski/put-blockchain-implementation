@@ -3,6 +3,7 @@ import * as CryptoJS from 'crypto-js';
 
 export class Block {
   public nonce = Math.round(Math.random() * 9999999).toString();
+  public hash: string;
   public transactionHashes: string[] = []; // keep the transaction hashes in array
 
   constructor(
@@ -13,15 +14,26 @@ export class Block {
     this.transactionHashes = transactions.map(
       (transaction) => transaction.hash,
     );
+    this.hash = this.calculateHash();
   }
 
-  get hash() {
-    const str =
-      JSON.stringify(this.transactionHashes) +
+  mineBlock(difficulty: number) {
+    while (
+      this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')
+    ) {
+      this.nonce = (parseInt(this.nonce, 10) + 1).toString();
+      this.hash = this.calculateHash();
+    }
+
+    console.log('BLOCK MINED: ' + this.hash);
+  }
+
+  calculateHash() {
+    return CryptoJS.SHA256(
       this.prevHash +
-      this.ts +
-      this.nonce;
-    const hash = CryptoJS.SHA256(str).toString();
-    return hash;
+        this.ts.getTime().toString() +
+        JSON.stringify(this.transactions) +
+        this.nonce.toString(),
+    ).toString();
   }
 }
