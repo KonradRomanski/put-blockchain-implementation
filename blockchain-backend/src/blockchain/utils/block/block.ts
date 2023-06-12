@@ -29,11 +29,23 @@ export class Block {
   }
 
   calculateHash() {
+    // console.log('Calculating hash');
+    // console.log('prevHash', this.prevHash);
+    // console.log('ts', this.ts.getTime().toString());
+    // console.log('transactions', JSON.stringify(this.transactionHashes) );
+    // console.log('nonce', this.nonce.toString());
+
     return CryptoJS.SHA256(
       this.prevHash +
         this.ts.getTime().toString() +
-        JSON.stringify(this.transactions) +
+        JSON.stringify(this.transactionHashes) +
         this.nonce.toString(),
     ).toString();
   }
+  addTransaction(transaction: Transaction) {
+    this.transactions.push(transaction);
+    this.transactionHashes.push(transaction.hash);
+    this.hash = this.calculateHash();
+  }
 }
+

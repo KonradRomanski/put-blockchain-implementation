@@ -55,6 +55,7 @@ export class BlockchainService {
   }
 
   async addTransaction(t: Transaction) {
+    t = new Transaction(t.amount, t.sender, t.receiver);
     // Fetch the latest block from the database
     const lastBlockEntity = await this.blocksRepository
       .createQueryBuilder('block')
@@ -78,8 +79,10 @@ export class BlockchainService {
     if (lastBlock.transactions.length < 3) {
       // console.log('The last block still good');
       // Add the new transaction
-      lastBlock.transactions.push(t);
+      lastBlock.addTransaction(t);
+
       // Recalculate the hash
+      lastBlock.calculateHash();
       lastBlock.mineBlock(this.blockchain.difficulty);
       // Convert the Block back to an EntityBlock
       const updatedBlockEntity = this.blockToEntityBlock(lastBlock);
@@ -91,8 +94,8 @@ export class BlockchainService {
         updatedBlockEntity,
       );
     } else {
-      console.log('Adding the new block');
-      // // The last block is full, mine it
+      // console.log('Adding the new block');
+      // The last block is full, mine it
       // lastBlock.mineBlock(this.blockchain.difficulty);
       // // Save the mined block
       // const minedBlockEntity = this.blockToEntityBlock(lastBlock);
@@ -137,6 +140,7 @@ export class BlockchainService {
   }
 
   validateChain() {
+    console.log(this.blockchain)
     return this.blockchain.validateChain();
   }
 }
