@@ -117,18 +117,6 @@ export class BlockchainService {
     }
   }
 
-  // async addBlock(t: Transaction) {
-  //   this.blockchain.addBlock(t);
-  //   const newBlock = this.blockchain.getLastBlock();
-  //   const blockEntity = new EntityBlock();
-  //   blockEntity.nonce = newBlock.nonce.toString();
-  //   blockEntity.previousHash = newBlock.prevHash;
-  //   blockEntity.transactions = newBlock.transactions;
-  //   blockEntity.timestamp = newBlock.ts;
-  //   blockEntity.hash = newBlock.hash;
-  //   console.log('POST', blockEntity);
-  //   await this.blocksRepository.save(blockEntity);
-  // }
 
   validateChain() {
     return this.blockchain.validateChain();

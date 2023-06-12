@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:docker": " docker run --name postgres-container --network postgres-network -e POSTGRES_PASSWORD=passw0rd -p 5432:5432 -d postgres",
+    "db:terminal": "docker exec -it postgres-container psql -U postgres",
+    "db:create": "docker exec -it postgres-container psql -U postgres -c 'CREATE DATABASE blockchaindb;'"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
