@@ -27,28 +27,28 @@ export class Blockchain {
     }
   }
 
-
-
-
-
   getLastBlock(): Block {
     return this.chain[this.chain.length - 1];
   }
 
-  validateChain(): boolean {
+  validateChain() {
+    const result = { isValid: true, errors: [] };
+
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
       const previousBlock = this.chain[i - 1];
 
-      if (currentBlock.hash !== currentBlock.hash) {
-        return false;
+      if (currentBlock.calculateHash() !== currentBlock.hash) {
+        result.isValid = false;
+        result.errors.push(`Block ${i} hash is not valid`);
       }
 
       if (currentBlock.prevHash !== previousBlock.hash) {
-        return false;
+        result.isValid = false;
+        result.errors.push(`Block ${i} previous hash is not valid`);
       }
     }
 
-    return true;
+    return result;
   }
 }

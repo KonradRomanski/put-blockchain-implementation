@@ -33,11 +33,14 @@ export class BlockchainController {
     description: 'The validation status of the blockchain.',
   })
   validateChain() {
-    const isValid = this.blockchainService.validateChain();
-    if (isValid) {
+    const validationResult = this.blockchainService.validateChain();
+    if (validationResult.isValid) {
       return { message: 'Blockchain is valid' };
     } else {
-      return { message: 'Blockchain is not valid' };
+      return {
+        message: 'Blockchain is not valid',
+        errors: validationResult.errors,
+      };
     }
   }
 }

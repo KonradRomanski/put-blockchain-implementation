@@ -59,16 +59,24 @@ export class BlockchainService {
     const lastBlockEntity = await this.blocksRepository
       .createQueryBuilder('block')
       .orderBy('block.id', 'DESC')
-      .getOneOrFail();
+      .getOne();
+
+    if (!lastBlockEntity) {
+      const newBlock = new Block('', [t]);
+      newBlock.mineBlock(this.blockchain.difficulty);
+      const newBlockEntity = this.blockToEntityBlock(newBlock);
+      await this.blocksRepository.save(newBlockEntity);
+      return;
+    }
 
     // Convert the EntityBlock to a Block
     const lastBlock = this.entityBlockToBlock(lastBlockEntity);
 
-    console.log('lasBlockEntity', lastBlockEntity);
-    console.log('lastBlock', lastBlock);
+    // console.log('lasBlockEntity', lastBlockEntity);
+    // console.log('lastBlock', lastBlock);
 
     if (lastBlock.transactions.length < 3) {
-      console.log('The last block still good');
+      // console.log('The last block still good');
       // Add the new transaction
       lastBlock.transactions.push(t);
       // Recalculate the hash
@@ -76,7 +84,7 @@ export class BlockchainService {
       // Convert the Block back to an EntityBlock
       const updatedBlockEntity = this.blockToEntityBlock(lastBlock);
 
-      console.log('updatedBlockEntity', updatedBlockEntity);
+      // console.log('updatedBlockEntity', updatedBlockEntity);
       // Update the block in the database
       await this.blocksRepository.update(
         lastBlockEntity.id,
