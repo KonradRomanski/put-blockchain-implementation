@@ -21,9 +21,9 @@ export class BlockchainController {
     status: 201,
     description: 'The transaction has been successfully added.',
   })
-  addTransaction(@Body() transactionDto: TransactionDto) {
-    this.blockchainService.addTransaction(transactionDto);
-    return { message: 'Transaction added' };
+  async addTransaction(@Body() transactionDto: TransactionDto) {
+    const msg = await this.blockchainService.addTransaction(transactionDto);
+    return { msg };
   }
 
   @Get('validate')
@@ -42,5 +42,11 @@ export class BlockchainController {
         errors: validationResult.errors,
       };
     }
+  }
+
+  @Get('key')
+  @ApiOperation({ summary: 'Get the pair of cryptographic keys' })
+  returnKey() {
+    return this.blockchainService.generateKeyPair();
   }
 }

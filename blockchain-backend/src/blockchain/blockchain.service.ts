@@ -5,6 +5,8 @@ import { Block as EntityBlock } from './entities/block.entity/block.entity';
 import { Blockchain } from './utils/blockchain/blockchain';
 import { Block } from './utils/block/block';
 import { Transaction } from './utils/transaction/transaction';
+import * as elliptic from 'elliptic';
+import { TransactionDto } from './dto/transaction.dto/transaction.dto';
 
 @Injectable()
 export class BlockchainService {
@@ -54,62 +56,58 @@ export class BlockchainService {
     );
   }
 
-  async addTransaction(t: Transaction) {
-    t = new Transaction(t.amount, t.sender, t.receiver);
-    // Fetch the latest block from the database
-    const lastBlockEntity = await this.blocksRepository
-      .createQueryBuilder('block')
-      .orderBy('block.id', 'DESC')
-      .getOne();
+  async addTransaction(tr: TransactionDto) {
+    const t = new Transaction(tr.amount, tr.sender, tr.receiver);
+    // const keys = this.generateKeyPair();
+    const keys = { privateKey: tr.private_key, publicKey: tr.sender };
+    console.log('hash', t.hash);
+    console.log('privateKey', keys.privateKey);
+    console.log('publicKey', keys.publicKey);
 
-    if (!lastBlockEntity) {
-      const newBlock = new Block('', [t]);
-      newBlock.mineBlock(this.blockchain.difficulty);
-      const newBlockEntity = this.blockToEntityBlock(newBlock);
-      await this.blocksRepository.save(newBlockEntity);
-      return;
-    }
+    //Signing the transaction
+    const ec = new elliptic.ec('secp256k1');
+    const key = ec.keyFromPrivate(keys.privateKey, 'hex');
+    const signature = key.sign(t.hash, 'hex', { canonical: true });
+    const signatureString = signature.toDER('hex');
+    console.log('Signature String: ', signatureString);
 
-    // Convert the EntityBlock to a Block
-    const lastBlock = this.entityBlockToBlock(lastBlockEntity);
+    //Verifying the transaction
+    const keyFromPublic = ec.keyFromPublic(keys.publicKey, 'hex');
+    const isValid = keyFromPublic.verify(t.hash, signatureString);
+    console.log('isValid', isValid);
 
-    // console.log('lasBlockEntity', lastBlockEntity);
-    // console.log('lastBlock', lastBlock);
+    if (isValid) {
+      const lastBlockEntity = await this.blocksRepository
+        .createQueryBuilder('block')
+        .orderBy('block.id', 'DESC')
+        .getOne();
 
-    if (lastBlock.transactions.length < 3) {
-      // console.log('The last block still good');
-      // Add the new transaction
-      lastBlock.addTransaction(t);
+      if (!lastBlockEntity) {
+        const newBlock = new Block('', [t]);
+        newBlock.mineBlock(this.blockchain.difficulty);
+        const newBlockEntity = this.blockToEntityBlock(newBlock);
+        await this.blocksRepository.save(newBlockEntity);
+        return;
+      }
+      const lastBlock = this.entityBlockToBlock(lastBlockEntity);
 
-      // Recalculate the hash
-      lastBlock.calculateHash();
-      lastBlock.mineBlock(this.blockchain.difficulty);
-      // Convert the Block back to an EntityBlock
-      const updatedBlockEntity = this.blockToEntityBlock(lastBlock);
-
-      // console.log('updatedBlockEntity', updatedBlockEntity);
-      // Update the block in the database
-      await this.blocksRepository.update(
-        lastBlockEntity.id,
-        updatedBlockEntity,
-      );
-    } else {
-      // console.log('Adding the new block');
-      // The last block is full, mine it
-      // lastBlock.mineBlock(this.blockchain.difficulty);
-      // // Save the mined block
-      // const minedBlockEntity = this.blockToEntityBlock(lastBlock);
-      // await this.blocksRepository.save(minedBlockEntity);
-
-      // Create a new block and add the new transaction to it
-      const newBlock = new Block(lastBlock.hash, [t]);
-      // Mine the new block
-      newBlock.mineBlock(this.blockchain.difficulty);
-      // Convert the Block back to an EntityBlock
-      const newBlockEntity = this.blockToEntityBlock(newBlock);
-      // Save the new block
-      await this.blocksRepository.save(newBlockEntity);
-    }
+      if (lastBlock.transactions.length < 3) {
+        lastBlock.addTransaction(t);
+        lastBlock.calculateHash();
+        lastBlock.mineBlock(this.blockchain.difficulty);
+        const updatedBlockEntity = this.blockToEntityBlock(lastBlock);
+        await this.blocksRepository.update(
+          lastBlockEntity.id,
+          updatedBlockEntity,
+        );
+      } else {
+        const newBlock = new Block(lastBlock.hash, [t]);
+        newBlock.mineBlock(this.blockchain.difficulty);
+        const newBlockEntity = this.blockToEntityBlock(newBlock);
+        await this.blocksRepository.save(newBlockEntity);
+      }
+      return { message: 'Transaction added' };
+    } else return { message: 'Invalid transaction' };
   }
 
   private blockToEntityBlock(block: Block): EntityBlock {
@@ -139,8 +137,16 @@ export class BlockchainService {
     return block;
   }
 
+  public generateKeyPair(): { privateKey: string; publicKey: string } {
+    const ec = new elliptic.ec('secp256k1');
+    const keyPair = ec.genKeyPair();
+    const privateKey = keyPair.getPrivate('hex');
+    const publicKey = keyPair.getPublic('hex');
+    return { privateKey, publicKey };
+  }
+
   validateChain() {
-    console.log(this.blockchain)
+    console.log(this.blockchain);
     return this.blockchain.validateChain();
   }
 }
